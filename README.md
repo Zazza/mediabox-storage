@@ -1,4 +1,4 @@
 mediabox-storage
 ================
 
-Simple php torage for mediabox
+Simple php storage for mediabox
