@@ -22,3 +22,16 @@ mkdir upload/_thumb
 chown -R www-data:www-data upload 
 
 chmod 770 upload
+
+-----
+
+Increase file zise:
+
+php.ini:
+
+upload_max_filesize = [NUM]M
+post_max_size = [NUM]M
+
+nginx.conf:
+
+client_max_body_size = [NUM]M
