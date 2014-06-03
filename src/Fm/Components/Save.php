@@ -8,9 +8,7 @@ class Save extends Base {
     private $_target = null;
 
     public function save() {
-        move_uploaded_file($this->_source, $this->_target);
-
-        return true;
+        return move_uploaded_file($this->_source, $this->_target);
     }
 
     public function handleUpload($name) {

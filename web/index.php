@@ -75,9 +75,7 @@ $app->get('/get/', function (Request $request) use ($app) {
         $content_type = finfo_file($finfo, $app["files"]->path);
         finfo_close($finfo);
 
-        $app["files"]->streaming($content_type);
-
-        return new Response('', 200);
+        return $app["files"]->streaming($content_type);
     }
 
     return new Response("", 404);
