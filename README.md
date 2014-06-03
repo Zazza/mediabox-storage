@@ -16,13 +16,13 @@ chmod 770 upload
 ```
 
 ## Increase upload filesize limits:
-`php.ini:`
+###php.ini:
 ```
 upload_max_filesize = [NUM]M
 post_max_size = [NUM]M
 ```
 
-`nginx.conf:`
+###nginx.conf:
 ```
 client_max_body_size = [NUM]M
 ```
