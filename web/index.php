@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__.'/silex/vendor/autoload.php';
+require_once __DIR__.'/../vendor/autoload.php';
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -48,7 +48,7 @@ $app['files'] = $app->share(function () use ($app) {
 });
 
 $app->get('/', function (Request $request) use ($app) {
-    return new Response("", 200);
+    return new Response("welcome", 200);
 });
 
 // upload files
