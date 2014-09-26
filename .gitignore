@@ -1,4 +1,6 @@
+composer.lock
 var
+web/assets
 web/.idea
 web/upload
 vendor/

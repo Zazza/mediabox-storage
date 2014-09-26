@@ -1,0 +1,78 @@
+<div class="uk-width-medium-2-2" style="margin-bottom: 40px;">
+    <div class="uk-panel uk-panel-box uk-panel-box-secondary">
+        <div>
+            <i class="uk-icon-cog"></i> Settings
+
+            <div style="float: right;">
+                <a href="/site/logout/"><i class="uk-icon-power-off"></i> Выход</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% for message in App.user.getFlashes() %}
+<div class="uk-alert uk-alert-success">{{ message }}</div>
+{% endfor %}
+
+
+<form class="uk-form" method="post" action="/site/storageAccess/" style="margin-bottom: 20px;">
+    <fieldset>
+        <legend>Storage authorization:</legend>
+
+        <div class="uk-form-row">
+            <input type="text" name="User[username]" class="uk-form-width-medium" value="{{ login }}" placeholder="Login" />
+        </div>
+        <div class="uk-form-row">
+            <input type="password" name="User[password]" class="uk-form-width-medium" value="{{ password }}" placeholder="Password" />
+        </div>
+        <div class="uk-form-row">
+            <input type="submit" name="submit" value="Save" class="uk-button" />
+        </div>
+    </fieldset>
+</form>
+
+<form class="uk-form" method="post" action="/site/oauth/" style="margin-bottom: 20px;">
+    <fieldset>
+        <legend>Oauth:</legend>
+
+        <div class="uk-form-row">
+            <input type="text" name="Client[id]" value="{{ client_id }}" class="uk-form-width-medium" placeholder="Client id" />
+        </div>
+        <div class="uk-form-row">
+            <input type="text" name="Client[secret]" value="{{ client_secret }}" class="uk-form-width-medium" placeholder="Client secret" />
+        </div>
+        <div class="uk-form-row">
+            <input type="submit" name="submit" value="Save" class="uk-button" />
+        </div>
+    </fieldset>
+</form>
+
+<form class="uk-form" method="post" action="/site/origin/" style="margin-bottom: 20px;">
+    <fieldset>
+        <legend>Access-Control-Allow-Origin:</legend>
+
+        <div class="uk-form-row">
+            <input type="text" name="origin" value="{{ origin }}" class="uk-form-width-large" />
+        </div>
+        <div class="uk-form-row">
+            <input type="submit" name="submit" value="Save" class="uk-button" />
+        </div>
+    </fieldset>
+</form>
+
+<form class="uk-form" method="post" action="/site/upload/" style="margin-bottom: 20px;">
+    <fieldset>
+        <legend>Upload path:</legend>
+
+        <div class="uk-form-row">
+            <input type="text" name="path" value="{{ upload_path }}" class="uk-form-width-large" />
+        </div>
+        <div class="uk-form-row">
+            <input type="submit" name="submit" value="Save" class="uk-button" />
+        </div>
+    </fieldset>
+</form>
+
+<fieldset>
+    <legend>Download <a href="/site/export/">export</a>.</legend>
+</fieldset>

@@ -1,6 +1,4 @@
 <?php
-namespace Fm\Components;
-
 class Base {
     protected $_app;
     protected $_error = null;

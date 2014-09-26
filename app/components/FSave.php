@@ -1,9 +1,6 @@
 <?php
-namespace Fm\Components;
-
-class Save extends Base {
+class FSave extends Base {
     private $_filename = null;
-    private $_ext = null;
     private $_source = null;
     private $_target = null;
 
@@ -11,9 +8,9 @@ class Save extends Base {
         return move_uploaded_file($this->_source, $this->_target);
     }
 
-    public function handleUpload($name) {
-        if (!is_writable($this->_app['upload'])){
-            $this->_error = 'Server error. Write in a directory: ' . $this->_app['upload'] . ' is impossible!';
+    public function handleUpload($path, $name) {
+        if (!is_writable($this->_app['upload'] . $path)){
+            $this->_error = 'Server error. Write in a directory: ' . $this->_app['upload'] . $path . ' is impossible!';
 
             return false;
         }
@@ -21,9 +18,8 @@ class Save extends Base {
         if (isset($_FILES['files'])) {
             $this->_source = $_FILES['files']['tmp_name'];
             $this->_filename = $name;
-            $this->_ext = end(explode('.', strtolower($_FILES['files']['name'])));
 
-            $this->_target = $this->_app['upload'] . $this->_filename;
+            $this->_target = $this->_app['upload'] . $path . $this->_filename;
 
             if ($this->save()) {
                 return true;

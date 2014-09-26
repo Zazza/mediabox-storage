@@ -1,0 +1,23 @@
+<form class="uk-form" method="post" action="/site/login/">
+    <fieldset>
+        <legend>Authorization:</legend>
+
+        {% if error %}
+            <div class="alert alert-error">
+                Login/password incorrect
+            </div>
+        {% endif %}
+
+        <div class="uk-form-row">
+            <input type="text" name="LoginForm[username]" placeholder="login" />
+        </div>
+
+        <div class="uk-form-row">
+            <input type="password" name="LoginForm[password]" placeholder="password" />
+        </div>
+
+        <div class="uk-form-row">
+            <input type="submit" name="submit" class="uk-button" value="Login">
+        </div>
+    </fieldset>
+</form>

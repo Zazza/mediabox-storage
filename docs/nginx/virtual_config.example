@@ -1,0 +1,57 @@
+server {
+    listen   80;
+    root /home/vhosts/storage/web;
+
+    access_log  /home/vhosts/storage/var/logs/storage.access.log;
+    error_log /home/vhosts/storage/var/logs/storage.error.log warn;
+
+    server_name storage;
+
+    charset utf-8;
+    client_max_body_size 1024M;
+    client_body_buffer_size 1024M;
+
+    rewrite ^/app\.php/?(.*)$ /$1 permanent;
+ 
+    location / {
+        set $cors "true";
+	if ($request_method = 'OPTIONS') {
+    	    set $cors "${cors}options";  
+        }
+	if ($cors = "trueoptions") {
+	    add_header 'Access-Control-Allow-Origin' "$http_origin";
+	    add_header 'Access-Control-Allow-Credentials' 'true';
+	    add_header 'Access-Control-Max-Age' 1728000;
+	    add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+	    add_header 'Access-Control-Allow-Headers' 'Authorization,Content-Type,Accept,Origin,User-Agent,DNT,Cache-Control,X-Mx-ReqToken,Keep-Alive,X-Requested-With,If-Modified-Since';
+	    add_header 'Content-Length' 0;
+    	    add_header 'Content-Type' 'text/plain charset=UTF-8';
+    	    return 204;
+	}
+
+        index index.php;
+        try_files $uri @rewriteapp;
+    }
+ 
+    location @rewriteapp {
+        rewrite ^(.*)$ /index.php/$1 last;
+    }
+
+    location ~ \.php {
+        fastcgi_pass unix:/var/run/php5-fpm.sock;
+        fastcgi_index /index.php;
+
+        include /etc/nginx/fastcgi_params;
+
+        fastcgi_split_path_info       ^(.+\.php)(/.+)$;
+        fastcgi_param PATH_INFO       $fastcgi_path_info;
+        fastcgi_param PATH_TRANSLATED $document_root$fastcgi_path_info;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_param PHP_VALUE "session.gc_maxlifetime=604800 \n session.save_path=/home/vhosts/storage/var/sessions \n session.cookie_lifetime=604800 \n upload_tmp_dir=/home/vhosts/storage/var/tmp"; 
+    	proxy_read_timeout 3600s;
+        proxy_connect_timeout 3600s;
+        fastcgi_connect_timeout 3600s;
+        fastcgi_send_timeout 3600s;
+        fastcgi_read_timeout 3600s;
+    }
+}
