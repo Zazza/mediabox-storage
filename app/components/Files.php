@@ -36,11 +36,11 @@ class Files extends Base {
         }
     }
 
-    public function removeFolder($dir)
+    public function rmFolder($dir)
     {
 
         if (!file_exists($dir)) {
-            return true;
+            return false;
         }
 
         if (!is_dir($dir)) {
@@ -52,7 +52,7 @@ class Files extends Base {
                 continue;
             }
 
-            if (!$this->removeFolder($dir . DIRECTORY_SEPARATOR . $item)) {
+            if (!$this->rmFolder($dir . DIRECTORY_SEPARATOR . $item)) {
                 return false;
             }
 
@@ -63,7 +63,7 @@ class Files extends Base {
         return true;
     }
 
-    public function rmFiles($file_path) {
+    public function rmFile($file_path) {
         if (is_file($this->_app["upload"] . $file_path)) {
             unlink($this->_app["upload"] . $file_path);
 
@@ -73,26 +73,18 @@ class Files extends Base {
         }
     }
 
-    public function move($data, $path) {
-        foreach($data as $part) {
-            $part = urldecode($part);
+    public function move($file, $path) {
+        $name = substr($file, strrpos($file, "/")+1);
 
-            $name = "";
-
-            if (is_file($this->_app["upload"] . $part)) {
-                $name = substr($part, strrpos($part, "/")+1);
+        if ($name != "") {
+            if (rename($this->_app["upload"] . $file, $this->_app["upload"] . $path . $name)) {
+                return true;
+            } else {
+                return false;
             }
-            if (is_dir($this->_app["upload"] . $part)) {
-                $part = substr($part, 0, strlen($part)-1);
-                $name = substr($part, strrpos($part, "/")+1);
-            }
-
-            if ($name != "") {
-                rename($this->_app["upload"] . $part, $this->_app["upload"] . $path . $name);
-            }
+        } else {
+            return false;
         }
-
-        return true;
     }
 
     public function rename($path, $old_name, $new_name) {
@@ -127,6 +119,9 @@ class Files extends Base {
         } else {
             header($_SERVER['SERVER_PROTOCOL'].' 200 OK');
         }
+
+        $origin = AccessOrigin::model()->findByPk(1);
+        header('Access-Control-Allow-Origin: ' . $origin->value);
 
         header('Content-Disposition: attachment; filename="'.$name.'"');
         header('Last-Modified: '.$ftime);
@@ -352,5 +347,52 @@ class Files extends Base {
         imagedestroy($src_resource);
 
         return base64_encode($image_data);
+    }
+
+    public function zip($data, $destination)
+    {
+        if (!extension_loaded('zip')) {
+            return false;
+        }
+
+        $zip = new ZipArchive();
+        if (!$zip->open($destination, ZIPARCHIVE::CREATE)) {
+            return false;
+        }
+
+        foreach($data as $file) {
+            $source = str_replace('\\', '/', realpath($this->_app["upload"] . $file));
+
+            if (is_dir($source) === true)
+            {
+                $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source), RecursiveIteratorIterator::SELF_FIRST);
+
+                foreach ($files as $file)
+                {
+                    $file = str_replace('\\', '/', $file);
+
+                    // Ignore "." and ".." folders
+                    if( in_array(substr($file, strrpos($file, '/')+1), array('.', '..')) )
+                        continue;
+
+                    $file = realpath($file);
+
+                    if (is_dir($file) === true)
+                    {
+                        $zip->addEmptyDir(str_replace($source . '/', '', $file . '/'));
+                    }
+                    else if (is_file($file) === true)
+                    {
+                        $zip->addFromString(str_replace($source . '/', '', $file), file_get_contents($file));
+                    }
+                }
+            }
+            else if (is_file($source) === true)
+            {
+                $zip->addFromString(basename($source), file_get_contents($source));
+            }
+        }
+
+        return $zip->close();
     }
 }

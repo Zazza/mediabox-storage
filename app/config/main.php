@@ -12,7 +12,7 @@ return array(
 	'modules'=>array(
 		'gii'=>array(
 		    'class'=>'system.gii.GiiModule',
-		    'password'=>'',
+		    'password'=>'123123',
             	    'ipFilters'=>array('*'),
 		),
 	),
@@ -30,6 +30,7 @@ return array(
 			'urlFormat'=>'path',
             'showScriptName'=>false,
 			'rules'=>array(
+                '<share:\w{8}>'=>'share/get',
 				'<controller:\w+>/<id:\d+>'=>'<controller>/view',
 				'<controller:\w+>/<action:\w+>/<id:\d+>'=>'<controller>/<action>',
 				'<controller:\w+>/<action:\w+>'=>'<controller>/<action>',
@@ -64,5 +65,6 @@ return array(
 	),
 
 	'params'=>array(
+        "debug" => true
 	),
 );

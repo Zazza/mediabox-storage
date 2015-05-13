@@ -13,23 +13,28 @@ class SiteController extends Controller
     {
         return array(
             array('allow',
-                'actions'=>array('index', 'login', 'error'),
-                'users'=>array('*'),
+                'actions' => array('index', 'login', 'error'),
+                'users' => array('*'),
             ),
             array('allow',
-                'actions'=>array('logout', 'storageAccess', 'oauth', 'origin', 'upload', 'export'),
-                'users'=>array('@'),
+                'actions' => array('logout', 'storageAccess', 'oauth', 'origin', 'upload', 'export'),
+                'users' => array('@'),
             ),
             array('deny',
-                'users'=>array('*'),
+                'users' => array('*'),
             ),
         );
+    }
+
+    protected function beforeAction($action) {
+        if (Yii::app()->params["debug"]) {
+            return parent::beforeAction($action);
+        }
     }
 
 	public function actionIndex()
 	{
         if (isset(Yii::app()->user->id)) {
-
             $user = User::model()->find(Yii::app()->user->id);
             $client = Clients::model()->find(1);
             $origin = AccessOrigin::model()->find(1);

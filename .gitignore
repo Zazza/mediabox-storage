@@ -1,6 +1,9 @@
-composer.lock
-var
-web/assets
-web/.idea
-web/upload
+.idea/
+var/
+framework/
+upload/
 vendor/
+logs/
+tmp/
+app/runtime/
+web/assets/

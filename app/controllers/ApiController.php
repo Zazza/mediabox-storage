@@ -64,6 +64,25 @@ class ApiController extends Controller
         }
     }
 
+    public function actionTestConnection() {
+        $oauth = new RemoteAuth();
+        $resource = $oauth->resource();
+
+        $resource->setTokenKey('token');
+        try {
+            $resource->isValid();
+
+            $this->_response = array(
+                "result" => true
+            );
+        } catch (Exception $e) {
+            $this->_response = array(
+                "result" => false,
+                "error" => $e->getMessage()
+            );
+        };
+    }
+
     public function actionCreateFolder() {
         try {
             $oauth = new RemoteAuth();
@@ -74,36 +93,7 @@ class ApiController extends Controller
 
             $files = new Files($this->_app);
 
-            if ($files->createFolder(urldecode($_GET["path"]) . urldecode($_GET["name"]))) {
-                $this->_response = array(
-                    "result" => true
-                );
-            } else {
-                $this->_response = array(
-                    "result" => false
-                );
-            }
-
-            return true;
-        } catch (League\OAuth2\Server\Exception\InvalidAccessTokenException $e) {
-            $this->_response = array(
-                "result" => false
-            );
-            $this->_response += array("message" => $e->getMessage());
-        }
-    }
-
-    public function actionRemoveFolder() {
-        try {
-            $oauth = new RemoteAuth();
-            $resource = $oauth->resource();
-
-            $resource->setTokenKey('token');
-            $resource->isValid();
-
-            $files = new Files($this->_app);
-
-            if ($files->removeFolder($this->_app["upload"] . urldecode($_GET["path"]) . urldecode($_GET["name"]))) {
+            if ($files->createFolder(urldecode($_POST["path"]) . urldecode($_POST["name"]))) {
                 $this->_response = array(
                     "result" => true
                 );
@@ -190,22 +180,55 @@ class ApiController extends Controller
 
             $files = new Files($this->_app);
 
-            if ($files->rmFiles(urldecode($_GET["path"]) . urldecode($_GET["name"]))) {
-                $this->_response = array(
-                    "result" => true
-                );
-            } else {
-                $this->_response = array(
-                    "result" => false
-                );
+            $result = [];
+            foreach(json_decode($_POST["files"], true) as $part) {
+                $array = [];
+
+                if ($part["type"] == "file") {
+                    if ($files->rmFile(urldecode($part["path"]))) {
+                        $array = [
+                            "type" => "file",
+                            "id" => $part["id"],
+                            "result" => true
+                        ];
+                    } else {
+                        $array = [
+                            "type" => "file",
+                            "id" => $part["id"],
+                            "result" => false
+                        ];
+                    }
+                }
+                if ($part["type"] == "folder") {
+                    if ($files->rmFolder($this->_app["upload"] . urldecode($part["path"]))) {
+                        $array = [
+                            "type" => "folder",
+                            "id" => $part["id"],
+                            "result" => true
+                        ];
+                    } else {
+                        $array = [
+                            "type" => "folder",
+                            "id" => $part["id"],
+                            "result" => false
+                        ];
+                    }
+                }
+
+                $result[] = $array;
             }
+
+            $this->_response = [
+                "result" => true,
+                "messages" => $result
+            ];
 
             return true;
         } catch (League\OAuth2\Server\Exception\InvalidAccessTokenException $e) {
             $this->_response = array(
-                "result" => false
+                "result" => false,
+                "message" => $e->getMessage()
             );
-            $this->_response += array("message" => $e->getMessage());
         }
     }
 
@@ -219,15 +242,27 @@ class ApiController extends Controller
 
             $files = new Files($this->_app);
 
-            if ($files->move($_GET["data"], urldecode($_GET["path"]))) {
-                $this->_response = array(
-                    "result" => true
-                );
-            } else {
-                $this->_response = array(
-                    "result" => false
-                );
+            $result = [];
+            foreach(json_decode($_POST["files"], true) as $part) {
+                if ($files->move($part["file"], urldecode($_POST["path"]))) {
+                    $result[] = [
+                        "type" => $part["type"],
+                        "id" => $part["id"],
+                        "result" => true
+                    ];
+                } else {
+                    $result[] = [
+                        "type" => $part["type"],
+                        "id" => $part["id"],
+                        "result" => false
+                    ];
+                }
             }
+
+            $this->_response = array(
+                "result" => true,
+                "messages" => $result
+            );
 
             return true;
         } catch (League\OAuth2\Server\Exception\InvalidAccessTokenException $e) {
@@ -248,7 +283,7 @@ class ApiController extends Controller
 
             $files = new Files($this->_app);
 
-            if ($files->rename(urldecode($_GET["path"]), urldecode($_GET["old_name"]), urldecode($_GET["new_name"]))) {
+            if ($files->rename(urldecode($_POST["path"]), urldecode($_POST["old_name"]), urldecode($_POST["new_name"]))) {
                 $this->_response = array(
                     "result" => true
                 );
@@ -257,6 +292,130 @@ class ApiController extends Controller
                     "result" => false
                 );
             }
+
+            return true;
+        } catch (League\OAuth2\Server\Exception\InvalidAccessTokenException $e) {
+            $this->_response = array(
+                "result" => false
+            );
+            $this->_response += array("message" => $e->getMessage());
+        }
+    }
+
+    public function actionDownload() {
+        $files = new Files($this->_app);
+
+        try {
+            $oauth = new RemoteAuth();
+            $resource = $oauth->resource();
+
+            $resource->setTokenKey('token');
+            $resource->isValid();
+
+            $zip_name = time() . ".zip";
+            $zip_filepath = $this->_app["upload"] . $zip_name;
+
+            $get = explode(",", urldecode($_GET["data"]));
+
+            $files->zip($get, $zip_filepath);
+            if (file_exists($zip_filepath)) {
+                $files->streaming("", $zip_name, "application/zip");
+
+                /*
+                 * не выполняется?
+                 *
+                unlink($zip_filepath);
+
+                $this->_response = array(
+                    "result" => true
+                );
+
+                return true;
+                */
+            }
+
+        } catch (League\OAuth2\Server\Exception\InvalidAccessTokenException $e) {
+            $this->_response = array(
+                "result" => false
+            );
+            $this->_response += array("message" => $e->getMessage());
+        }
+    }
+
+    private function _genShareName($len){
+        $gen = "";
+        $ch = array('digits' => array(0,1,2,3,4,5,6,7,8,9),
+            'lower' => array('a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'),
+            'upper' => array('A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'));
+
+        $chTypes = array_keys($ch);
+        $numTypes = count($chTypes) - 1;
+
+        for($i=0; $i<$len; $i++){
+            $chType = $chTypes[mt_rand(0, $numTypes)];
+            $gen .= $ch[$chType][mt_rand(0, count($ch[$chType]) - 1 )];
+        }
+
+        if (!Share::model()->exists("name = :gen", array(":gen" => $gen))) {
+            return $gen;
+        } else {
+            return $this->_genShareName($len);
+        }
+    }
+
+
+    public function actionShare() {
+        try {
+            $oauth = new RemoteAuth();
+            $resource = $oauth->resource();
+
+            $resource->setTokenKey('token');
+            $resource->isValid();
+
+            $share = new Share();
+            $share->name = $this->_genShareName(8);
+            $share->save(false);
+
+            foreach(explode(",", $_POST['files']) as $file) {
+                $share_file = new ShareFile();
+                $share_file->share_id = $share->id;
+                $share_file->file = $file;
+                $share_file->save(false);
+            }
+
+            $this->_response = array(
+                "result" => true,
+                'share' => $share->name
+            );
+
+            return true;
+        } catch (League\OAuth2\Server\Exception\InvalidAccessTokenException $e) {
+            $this->_response = array(
+                "result" => false
+            );
+            $this->_response += array("message" => $e->getMessage());
+        }
+    }
+
+    public function actionShareDelete() {
+        try {
+            $oauth = new RemoteAuth();
+            $resource = $oauth->resource();
+
+            $resource->setTokenKey('token');
+            $resource->isValid();
+
+            $share_id = $_POST["share_id"];
+            $share = Share::model()->findByPk($share_id);
+
+            foreach($share->ShareFile as $file) {
+                $file->delete();
+            }
+            $share->delete();
+
+            $this->_response = array(
+                "result" => true
+            );
 
             return true;
         } catch (League\OAuth2\Server\Exception\InvalidAccessTokenException $e) {

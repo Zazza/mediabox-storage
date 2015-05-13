@@ -23,7 +23,7 @@ class RemoteAuth {
     }
 
     public function resource() {
-	Yii::setPathOfAlias('Sum',Yii::getPathOfAlias('ext.Sum'));
+	    Yii::setPathOfAlias('Sum',Yii::getPathOfAlias('ext.Sum'));
 
         $resource = new League\OAuth2\Server\Resource(
             new \Sum\Oauth2\Server\Storage\Pdo\Mysql\Session()

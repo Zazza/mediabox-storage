@@ -1,24 +1,20 @@
 <?php
 
 /**
- * This is the model class for table "oauth_client_endpoints".
+ * This is the model class for table "share".
  *
- * The followings are the available columns in table 'oauth_client_endpoints':
+ * The followings are the available columns in table 'share':
  * @property string $id
- * @property string $client_id
- * @property string $redirect_uri
- *
- * The followings are the available model relations:
- * @property Clients $client
+ * @property string $name
  */
-class ClientEndpoints extends CActiveRecord
+class Share extends CActiveRecord
 {
 	/**
 	 * @return string the associated database table name
 	 */
 	public function tableName()
 	{
-		return 'oauth_client_endpoints';
+		return 'share';
 	}
 
 	/**
@@ -29,12 +25,11 @@ class ClientEndpoints extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('client_id, redirect_uri', 'required'),
-			array('client_id', 'length', 'max'=>40),
-			array('redirect_uri', 'length', 'max'=>255),
+			array('name', 'required'),
+			array('name', 'length', 'max'=>8),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('id, client_id, redirect_uri', 'safe', 'on'=>'search'),
+			array('id, name', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -45,9 +40,9 @@ class ClientEndpoints extends CActiveRecord
 	{
 		// NOTE: you may need to adjust the relation name and the related
 		// class name for the relations automatically generated below.
-		return array(
-			'client' => array(self::BELONGS_TO, 'Clients', 'client_id'),
-		);
+        return array(
+            'ShareFile'=>array(self::HAS_MANY, 'ShareFile', 'share_id'),
+        );
 	}
 
 	/**
@@ -57,8 +52,7 @@ class ClientEndpoints extends CActiveRecord
 	{
 		return array(
 			'id' => 'ID',
-			'client_id' => 'Client',
-			'redirect_uri' => 'Redirect Uri',
+			'name' => 'Name',
 		);
 	}
 
@@ -81,8 +75,7 @@ class ClientEndpoints extends CActiveRecord
 		$criteria=new CDbCriteria;
 
 		$criteria->compare('id',$this->id,true);
-		$criteria->compare('client_id',$this->client_id,true);
-		$criteria->compare('redirect_uri',$this->redirect_uri,true);
+		$criteria->compare('name',$this->name,true);
 
 		return new CActiveDataProvider($this, array(
 			'criteria'=>$criteria,
@@ -93,7 +86,7 @@ class ClientEndpoints extends CActiveRecord
 	 * Returns the static model of the specified AR class.
 	 * Please note that you should have this exact method in all your CActiveRecord descendants!
 	 * @param string $className active record class name.
-	 * @return ClientEndpoints the static model class
+	 * @return Share the static model class
 	 */
 	public static function model($className=__CLASS__)
 	{
