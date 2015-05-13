@@ -1,6 +1,8 @@
 mediabox-storage
 ================
 
+http://blog.8x86.ru/fm/
+
 Simple php storage for mediabox
 
 ## Install:
